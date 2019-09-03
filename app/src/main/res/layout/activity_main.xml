@@ -7,7 +7,7 @@
     android:orientation="vertical"
     android:layout_margin="16dp"
     android:gravity="center"
-    tools:context=".MainActivity">
+    tools:context=".activity.MainActivity">
 
     <ImageView
         android:id="@+id/imageView"
@@ -17,7 +17,7 @@
         android:layout_marginBottom="20dp"/>
 
     <EditText
-        android:id="@+id/editText"
+        android:id="@+id/editCadastroEmail"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
@@ -27,7 +27,7 @@
         android:padding="10dp" />
 
     <EditText
-        android:id="@+id/editText2"
+        android:id="@+id/editCadastroSenha"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
@@ -53,7 +53,7 @@
             android:text="Logar" />
 
         <Switch
-            android:id="@+id/switch1"
+            android:id="@+id/switchAcesso"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="0"
@@ -69,7 +69,7 @@
     </LinearLayout>
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/buttonAcesso"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Acessar"
