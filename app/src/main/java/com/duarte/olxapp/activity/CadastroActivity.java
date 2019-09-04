@@ -1,5 +1,6 @@
 package com.duarte.olxapp.activity;
 
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -19,7 +20,7 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
 
-public class MainActivity extends AppCompatActivity {
+public class CadastroActivity extends AppCompatActivity {
 
     private Button botaoAcessar;
     private EditText campoEmail, campoSenha;
@@ -30,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_cadastro);
 
         inicializaComponentes();
         autenticacao = ConfiguracaoFirebase.getFirebaseAutenticacao();
@@ -53,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
                                 @Override
                                 public void onComplete(@NonNull Task<AuthResult> task) {
                                     if( task.isSuccessful() ){
-                                        Toast.makeText(MainActivity.this,
+                                        Toast.makeText(CadastroActivity.this,
                                                 "Cadastro realizado com sucesso",
                                                 Toast.LENGTH_SHORT).show();
                                     }else {
@@ -72,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
                                             e.printStackTrace();
                                         }
 
-                                        Toast.makeText(MainActivity.this,
+                                        Toast.makeText(CadastroActivity.this,
                                                 "Erro: " + erroExcecao,
                                                 Toast.LENGTH_SHORT).show();
 
@@ -91,11 +92,12 @@ public class MainActivity extends AppCompatActivity {
                                 public void onComplete(@NonNull Task<AuthResult> task) {
 
                                     if(task.isSuccessful()){
-                                        Toast.makeText(MainActivity.this,
+                                        Toast.makeText(CadastroActivity.this,
                                                 "Logado com sucesso",
                                                 Toast.LENGTH_SHORT).show();
+                                        startActivity(new Intent(getApplicationContext(), AnunciosActivity.class));
                                     }else {
-                                        Toast.makeText(MainActivity.this,
+                                        Toast.makeText(CadastroActivity.this,
                                                 "Erro ao fazer o login: " + task.getException(),
                                                 Toast.LENGTH_SHORT).show();
                                     }
@@ -105,13 +107,13 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                     }else {
-                        Toast.makeText(MainActivity.this,
+                        Toast.makeText(CadastroActivity.this,
                                 "Preencha a Senha!",
                                 Toast.LENGTH_SHORT).show();
                     }
 
                 }else {
-                    Toast.makeText(MainActivity.this,
+                    Toast.makeText(CadastroActivity.this,
                             "Preencha o E-mail!",
                             Toast.LENGTH_SHORT).show();
                 }
