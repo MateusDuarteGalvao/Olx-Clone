@@ -51,6 +51,7 @@ public class AnunciosActivity extends AppCompatActivity {
                 startActivity(new Intent(getApplicationContext(), CadastroActivity.class));
                 break;
             case R.id.menu_anuncios :
+                startActivity(new Intent(getApplicationContext(), MeusAnunciosActivity.class));
                 break;
             case R.id.menu_sair :
                 autenticacao.signOut();
