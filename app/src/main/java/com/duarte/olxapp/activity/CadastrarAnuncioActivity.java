@@ -14,8 +14,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.blackcat.currencyedittext.CurrencyEditText;
 import com.duarte.olxapp.R;
@@ -30,6 +33,7 @@ public class CadastrarAnuncioActivity extends AppCompatActivity implements View.
 
     private EditText campoTitulo, campoDescricao;
     private ImageView imagem1, imagem2, imagem3;
+    private Spinner campoEstado, campoCategoria;
     private MaskEditText campoTelefone;
     private CurrencyEditText campoValor;
 
@@ -48,9 +52,62 @@ public class CadastrarAnuncioActivity extends AppCompatActivity implements View.
         Permissoes.validarPermissoes(permissoes, this, 1);
 
         inicializarComponentes();
+        carregarDadosSpinner();
     }
 
-    public void salvarAnuncio(View view){
+    public void validarDadosAnuncio(View view) {
+
+        String fone = "";
+        String estado = campoEstado.getSelectedItem().toString();
+        String categoria = campoCategoria.getSelectedItem().toString();
+        String titulo = campoTitulo.getText().toString();
+        String valor = String.valueOf(campoValor.getRawValue());
+        String telefone = campoTelefone.getText().toString();
+        if( campoTelefone.getRawText() != null ){
+            fone = campoTelefone.getRawText().toString();
+        }
+        String descricao = campoDescricao.getText().toString();
+
+
+
+        //Realizando validacoes
+        if( listaFotosRecuperadas.size() != 0 ){
+            if( !estado.isEmpty() ){
+                if( !categoria.isEmpty() ){
+                    if( !titulo.isEmpty() ){
+                        if( !valor.isEmpty()  && !valor.equals("0")){
+                            if( !telefone.isEmpty() && fone.length() >=10 ){
+                                if( !descricao.isEmpty() ){
+                                    salvarAnuncio();
+                                }else{
+                                    exibirMensagemErro("Preencha o campo descrição!");
+                                }
+                            }else{
+                                exibirMensagemErro("Preencha o campo telefone, digite ao menos 10 números!");
+                            }
+                        }else{
+                            exibirMensagemErro("Preencha o campo valor!");
+                        }
+                    }else{
+                        exibirMensagemErro("Preencha o campo título");
+                    }
+                }else {
+                    exibirMensagemErro("Selecione a categoria!");
+                }
+            }else{
+                exibirMensagemErro("Selecione o estado!");
+            }
+        }else{
+            exibirMensagemErro("Selecione ao menos uma foto!");
+        }
+
+    }
+
+    private void exibirMensagemErro(String mensagem){
+        Toast.makeText(this, mensagem, Toast.LENGTH_SHORT).show();
+    }
+
+    public void salvarAnuncio(){
 
         String valor = campoValor.getText().toString();
         Log.d("salvar", "salvarAnuncio" + valor );
@@ -101,12 +158,39 @@ public class CadastrarAnuncioActivity extends AppCompatActivity implements View.
         }
     }
 
+    private void carregarDadosSpinner() {
+
+        /*String[] estados = new String[]{
+            "SP", "MT"
+        };*/
+        //Configura spinner dos estados
+        String[] estados = getResources().getStringArray(R.array.estados);
+        ArrayAdapter<String> adapterEstado = new ArrayAdapter<String>(
+                this, android.R.layout.simple_spinner_item,
+                estados);
+        adapterEstado.setDropDownViewResource( android.R.layout.simple_spinner_dropdown_item );
+        campoEstado.setAdapter( adapterEstado );
+
+        //Configura spinner das categorias
+        String[] categorias = getResources().getStringArray(R.array.categorias);
+        ArrayAdapter<String> adapter1Categoria = new ArrayAdapter<String>(
+                this, android.R.layout.simple_spinner_item,
+                categorias
+        );
+        adapter1Categoria.setDropDownViewResource( android.R.layout.simple_spinner_dropdown_item );
+        campoCategoria.setAdapter( adapter1Categoria );
+
+    }
+
+
     private void inicializarComponentes(){
 
         campoTitulo = findViewById(R.id.editTitulo);
         campoTelefone = findViewById(R.id.editTelefone);
         campoDescricao = findViewById(R.id.editDescricao);
         campoValor = findViewById(R.id.editTValor);
+        campoEstado = findViewById(R.id.spinnerEstado);
+        campoCategoria = findViewById(R.id.spinnerCategoria);
         imagem1 = findViewById(R.id.imageCadastro1);
         imagem2 = findViewById(R.id.imageCadastro2);
         imagem3 = findViewById(R.id.imageCadastro3);
