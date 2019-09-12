@@ -55,6 +55,15 @@ public class CadastrarAnuncioActivity extends AppCompatActivity implements View.
         carregarDadosSpinner();
     }
 
+    public void configurarDadosAnuncio(){
+        String estado = campoEstado.getSelectedItem().toString();
+        String categoria = campoCategoria.getSelectedItem().toString();
+        String titulo = campoTitulo.getText().toString();
+        String valor = String.valueOf(campoValor.getRawValue());
+        String telefone = campoTelefone.getText().toString();
+        String descricao = campoDescricao.getText().toString();
+    }
+
     public void validarDadosAnuncio(View view) {
 
         String fone = "";
@@ -109,8 +118,8 @@ public class CadastrarAnuncioActivity extends AppCompatActivity implements View.
 
     public void salvarAnuncio(){
 
-        String valor = campoValor.getText().toString();
-        Log.d("salvar", "salvarAnuncio" + valor );
+        configurarDadosAnuncio();
+
 
     }
 
