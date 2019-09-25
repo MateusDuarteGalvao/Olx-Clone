@@ -23,6 +23,7 @@ import android.widget.Toast;
 import com.blackcat.currencyedittext.CurrencyEditText;
 import com.duarte.olxapp.R;
 import com.duarte.olxapp.helper.Permissoes;
+import com.duarte.olxapp.model.Anuncio;
 import com.santalu.maskedittext.MaskEditText;
 
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ public class CadastrarAnuncioActivity extends AppCompatActivity implements View.
     private Spinner campoEstado, campoCategoria;
     private MaskEditText campoTelefone;
     private CurrencyEditText campoValor;
+    private Anuncio anuncio;
 
     private String[] permissoes = new String[]{
             Manifest.permission.READ_EXTERNAL_STORAGE
@@ -55,38 +57,37 @@ public class CadastrarAnuncioActivity extends AppCompatActivity implements View.
         carregarDadosSpinner();
     }
 
-    public void configurarDadosAnuncio(){
+    public Anuncio configurarAnuncio(){
         String estado = campoEstado.getSelectedItem().toString();
         String categoria = campoCategoria.getSelectedItem().toString();
         String titulo = campoTitulo.getText().toString();
         String valor = String.valueOf(campoValor.getRawValue());
         String telefone = campoTelefone.getText().toString();
         String descricao = campoDescricao.getText().toString();
+
+        anuncio = new Anuncio();
+        anuncio.setEstado( estado );
+        anuncio.setCategoria( categoria );
+        anuncio.setTitulo( titulo );
+        anuncio.setValor( valor );
+        anuncio.setTelefone( telefone );
+        anuncio.setDescricao( descricao );
+
+        return anuncio;
     }
 
     public void validarDadosAnuncio(View view) {
 
-        String fone = "";
-        String estado = campoEstado.getSelectedItem().toString();
-        String categoria = campoCategoria.getSelectedItem().toString();
-        String titulo = campoTitulo.getText().toString();
-        String valor = String.valueOf(campoValor.getRawValue());
-        String telefone = campoTelefone.getText().toString();
-        if( campoTelefone.getRawText() != null ){
-            fone = campoTelefone.getRawText().toString();
-        }
-        String descricao = campoDescricao.getText().toString();
-
-
-
+        anuncio = configurarAnuncio();
+        
         //Realizando validacoes
         if( listaFotosRecuperadas.size() != 0 ){
-            if( !estado.isEmpty() ){
-                if( !categoria.isEmpty() ){
-                    if( !titulo.isEmpty() ){
-                        if( !valor.isEmpty()  && !valor.equals("0")){
-                            if( !telefone.isEmpty() && fone.length() >=10 ){
-                                if( !descricao.isEmpty() ){
+            if( !anuncio.getEstado().isEmpty() ){
+                if( !anuncio.getCategoria().isEmpty() ){
+                    if( !anuncio.getTitulo().isEmpty() ){
+                        if( !anuncio.getValor().isEmpty()  && !anuncio.getValor().equals("0")){
+                            if( !anuncio.getTelefone().isEmpty() && anuncio.getTelefone().length() >=10 ){
+                                if( !anuncio.getDescricao().isEmpty() ){
                                     salvarAnuncio();
                                 }else{
                                     exibirMensagemErro("Preencha o campo descrição!");
@@ -118,9 +119,18 @@ public class CadastrarAnuncioActivity extends AppCompatActivity implements View.
 
     public void salvarAnuncio(){
 
-        configurarDadosAnuncio();
+        /*
+        * Salvar imagem no storage
+        **/
+        for (int  i=0; i < listaFotosRecuperadas.size(); i++){
+            String urlImagem = listaFotosRecuperadas.get(i);
+            int tamanhoLista = listaFotosRecuperadas.size();
+            salvarFotoStorage(urlImagem, tamanhoLista, i );
+        }
 
+    }
 
+    private void salvarFotoStorage(String urlImagem, int tamanhoLista, int i) {
     }
 
     @Override
