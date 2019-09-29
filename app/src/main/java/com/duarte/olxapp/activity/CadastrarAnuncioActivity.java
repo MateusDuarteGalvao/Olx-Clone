@@ -2,6 +2,7 @@ package com.duarte.olxapp.activity;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -9,7 +10,6 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,13 +22,20 @@ import android.widget.Toast;
 
 import com.blackcat.currencyedittext.CurrencyEditText;
 import com.duarte.olxapp.R;
+import com.duarte.olxapp.helper.ConfiguracaoFirebase;
 import com.duarte.olxapp.helper.Permissoes;
 import com.duarte.olxapp.model.Anuncio;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.santalu.maskedittext.MaskEditText;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
+import dmax.dialog.SpotsDialog;
 
 public class CadastrarAnuncioActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -38,17 +45,23 @@ public class CadastrarAnuncioActivity extends AppCompatActivity implements View.
     private MaskEditText campoTelefone;
     private CurrencyEditText campoValor;
     private Anuncio anuncio;
+    private StorageReference storage;
+    private AlertDialog dialog;
 
     private String[] permissoes = new String[]{
             Manifest.permission.READ_EXTERNAL_STORAGE
     };
 
     private List<String> listaFotosRecuperadas = new ArrayList<>();
+    private List<String> listaURLFotos = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cadastrar_anuncio);
+
+        //Configurações inicais
+        storage = ConfiguracaoFirebase.getFirebaseStorage();
 
         //Validar permissoes
         Permissoes.validarPermissoes(permissoes, this, 1);
@@ -61,7 +74,7 @@ public class CadastrarAnuncioActivity extends AppCompatActivity implements View.
         String estado = campoEstado.getSelectedItem().toString();
         String categoria = campoCategoria.getSelectedItem().toString();
         String titulo = campoTitulo.getText().toString();
-        String valor = String.valueOf(campoValor.getRawValue());
+        String valor = campoValor.getText().toString();
         String telefone = campoTelefone.getText().toString();
         String descricao = campoDescricao.getText().toString();
 
@@ -79,13 +92,15 @@ public class CadastrarAnuncioActivity extends AppCompatActivity implements View.
     public void validarDadosAnuncio(View view) {
 
         anuncio = configurarAnuncio();
-        
+        String valor = String.valueOf(campoValor.getRawValue());
+
+
         //Realizando validacoes
         if( listaFotosRecuperadas.size() != 0 ){
             if( !anuncio.getEstado().isEmpty() ){
                 if( !anuncio.getCategoria().isEmpty() ){
                     if( !anuncio.getTitulo().isEmpty() ){
-                        if( !anuncio.getValor().isEmpty()  && !anuncio.getValor().equals("0")){
+                        if( !valor.isEmpty()  && !valor.equals("0")){
                             if( !anuncio.getTelefone().isEmpty() && anuncio.getTelefone().length() >=10 ){
                                 if( !anuncio.getDescricao().isEmpty() ){
                                     salvarAnuncio();
@@ -119,6 +134,13 @@ public class CadastrarAnuncioActivity extends AppCompatActivity implements View.
 
     public void salvarAnuncio(){
 
+        dialog = new SpotsDialog.Builder()
+                .setContext( this )
+                .setMessage("Salvando Anúncio")
+                .setCancelable( false )
+                .build();
+        dialog.show();
+
         /*
         * Salvar imagem no storage
         **/
@@ -130,7 +152,42 @@ public class CadastrarAnuncioActivity extends AppCompatActivity implements View.
 
     }
 
-    private void salvarFotoStorage(String urlImagem, int tamanhoLista, int i) {
+    private void salvarFotoStorage(String urlString, final int totalFotos, int contador) {
+
+        //Criar nó no Storage
+        StorageReference imagemAnuncio = storage.child("imagens")
+                .child("anuncios")
+                .child( anuncio.getIdAnuncio() )
+                .child("imagem"+contador);
+
+        //Fazer upload do arquivo
+        UploadTask uploadTask = imagemAnuncio.putFile( Uri.parse(urlString) );
+        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
+                Uri firebaseUrl = taskSnapshot.getDownloadUrl();
+                String urlConvertida = firebaseUrl.toString();
+
+                listaURLFotos.add( urlConvertida );
+
+                if( totalFotos == listaURLFotos.size() ){
+                    anuncio.setFotos( listaURLFotos );
+                    anuncio.salvar();
+
+                    dialog.dismiss();
+                    finish();
+                }
+
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                exibirMensagemErro("Falha ao fazer upload");
+                Log.i("INFO", "Falha ao fazer upload: " + e.getMessage());
+            }
+        });
+
     }
 
     @Override
