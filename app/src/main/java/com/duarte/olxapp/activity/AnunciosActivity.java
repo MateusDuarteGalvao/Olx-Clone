@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.duarte.olxapp.R;
 import com.duarte.olxapp.adapter.AdapterAnuncios;
@@ -40,6 +41,8 @@ public class AnunciosActivity extends AppCompatActivity {
     private DatabaseReference anunciosPublicosRef;
     private AlertDialog dialog;
     private String filtroEstado = "";
+    private String filtroCategoria = "";
+    private boolean filtrandoPorEstado = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +90,7 @@ public class AnunciosActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
                 filtroEstado = spinnerEstado.getSelectedItem().toString();
                 recuperarAnunciosPorEstado();
+                filtrandoPorEstado = true;
             }
         });
 
@@ -127,6 +131,95 @@ public class AnunciosActivity extends AppCompatActivity {
                         listaAnuncios.add( anuncio );
 
                     }
+                }
+
+                Collections.reverse( listaAnuncios );
+                adapterAnuncios.notifyDataSetChanged();
+                dialog.dismiss();
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
+    public void filtrarPorCategoria(View view) {
+
+        if ( filtrandoPorEstado == true ) {
+
+            AlertDialog.Builder dialogCategoria = new AlertDialog.Builder(this);
+            dialogCategoria.setTitle("Selecione a categoria desejada");
+
+            //Configurar spinner
+            View viewSpinner = getLayoutInflater().inflate(R.layout.dialog_spinner, null);
+
+            //Configura spinner dos estados
+            final Spinner spinnerCategoria = viewSpinner.findViewById(R.id.spinnerFiltro);
+            String[] categorias = getResources().getStringArray(R.array.categorias);
+            ArrayAdapter<String> adapterCategoria = new ArrayAdapter<String>(
+                    this, android.R.layout.simple_spinner_item,
+                    categorias);
+            adapterCategoria.setDropDownViewResource( android.R.layout.simple_spinner_dropdown_item );
+            spinnerCategoria.setAdapter( adapterCategoria );
+
+            dialogCategoria.setView( viewSpinner );
+
+            dialogCategoria.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    filtroCategoria = spinnerCategoria.getSelectedItem().toString();
+                    recuperarAnunciosPorCategoria();
+                }
+            });
+
+            dialogCategoria.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+
+                }
+            });
+
+            AlertDialog dialog = dialogCategoria.create();
+            dialog.show();
+
+        }
+        else {
+            Toast.makeText(this,
+                    "Escolha uma região primeiro!",
+                    Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    public void recuperarAnunciosPorCategoria() {
+
+        dialog = new SpotsDialog.Builder()
+                .setContext( this )
+                .setMessage("Filtrando anúncios")
+                .setCancelable( false )
+                .build();
+        dialog.show();
+
+        //Configura nó por categoria
+        anunciosPublicosRef = ConfiguracaoFirebase.getFirebase()
+                .child("anuncios")
+                .child(filtroEstado)
+                .child(filtroCategoria);
+
+        anunciosPublicosRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                listaAnuncios.clear();
+
+                for (DataSnapshot anuncios: dataSnapshot.getChildren()) {
+
+                    Anuncio anuncio = anuncios.getValue(Anuncio.class);
+                    listaAnuncios.add( anuncio );
+
                 }
 
                 Collections.reverse( listaAnuncios );
